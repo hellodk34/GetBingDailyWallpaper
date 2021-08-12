@@ -51,6 +51,8 @@ cmake-build-*/
 
 # IntelliJ
 out/
+mvnw
+mvnw.cmd
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
