@@ -5,13 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.net.URLConnection;
 
 /**
  * @author: hellodk
@@ -22,11 +23,11 @@ import java.nio.file.Paths;
 @Configuration
 public class MainService {
 
-    static String apiUrl = "http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US";
-    static String baseUrl = "http://bing.com";
-    static String finalImageUrl = "";
-    static String copyright = "";
-    static String copyrightlink = "";
+    String apiUrl = "http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN";
+    String baseUrl = "http://bing.com";
+    String finalImageUrl = "";
+    String copyright = "";
+    String copyrightlink = "";
 
     public void getBingDailyWallpaperInfo() {
         HttpURLConnection con;
@@ -52,6 +53,9 @@ public class MainService {
                     copyrightlink = theImage.getString("copyrightlink");
                 }
             }
+
+            bufferedReader.close();
+            con.disconnect();
             //System.out.println(sb);
         }
         catch (Exception e) {
@@ -62,22 +66,21 @@ public class MainService {
     public JSONObject getInfo() {
         HttpURLConnection con;
         BufferedReader bufferedReader;
+        StringBuilder sb = new StringBuilder();
         try {
             URL url = new URL(apiUrl);
             // 得到连接对象
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuilder sb = new StringBuilder();
             while ((finalImageUrl = bufferedReader.readLine()) != null) {
                 sb.append(finalImageUrl);
             }
-            return JSONObject.parseObject(sb.toString());
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        return new JSONObject();
+        return JSONObject.parseObject(sb.toString());
     }
 
     public String getFinalImageUrl() {
@@ -95,11 +98,25 @@ public class MainService {
     public void getImage() {
         try {
             String filePath = "bing.jpg";
-            InputStream in = new URL(finalImageUrl).openStream();
-
-            Files.deleteIfExists(Paths.get(filePath));
-            Files.copy(in, Paths.get(filePath));
-            in.close();
+            URL url = new URL(finalImageUrl);
+            URLConnection con = url.openConnection();
+            InputStream is = con.getInputStream();
+            // 构造 1KB 的数据缓冲字节数组
+            byte[] bs = new byte[1024];
+            int len;
+            File file = new File(filePath);
+            // 如果已经存在文件则将其删除
+            if (file.exists()) {
+                file.delete();
+            }
+            FileOutputStream os = new FileOutputStream(file, true);
+            // 不断读取输入流
+            while ((len = is.read(bs)) != -1) {
+                os.write(bs, 0, len);
+            }
+            // 关闭连接
+            is.close();
+            os.close();
         }
         catch (IOException e) {
             e.printStackTrace();
