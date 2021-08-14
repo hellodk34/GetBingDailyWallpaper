@@ -102,3 +102,30 @@ server {
 ```
 # firewall-cmd --reload
 ```
+
+# 使用 docker image 创建自己的 API
+
+# Usage
+
+## pull this image
+
+```
+docker pull dko0/bingwallpaper:latest
+```
+
+## run it as a container
+
+```
+docker run -d --name bingwallpaper -p 8011:8011 --restart unless-stopped dko0/bingwallpaper:latest
+```
+
+## fetch today's bing wallpaper
+
+access http://YOUR_IP:8011/image
+
+## other API
+
+- image original url: http://YOUR_IP:8011/url
+- image copyright: http://YOUR_IP:8011/copyright
+- image copyrighturl: http://YOUR_IP:8011/copyrighturl
+- image full info(in a json format): http://YOUR_IP:8011/info
